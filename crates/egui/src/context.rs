@@ -78,7 +78,7 @@ impl Default for WrappedTextureManager {
         // Will be filled in later
         let font_id = tex_mngr.alloc(
             "egui_font_texture".into(),
-            epaint::ColorImage::filled([0, 0], Color32::TRANSPARENT).into(),
+            epaint::ColorImage::filled([0, 0], Color32::TRANSPARENT),
             Default::default(),
         );
         assert_eq!(
@@ -2196,14 +2196,17 @@ impl Context {
     /// ```
     ///
     /// See also [`crate::ImageData`], [`crate::Ui::image`] and [`crate::Image`].
-    pub fn load_texture(
+    pub fn load_texture<T>(
         &self,
         name: impl Into<String>,
-        image: impl Into<ImageData>,
+        image: T,
         options: TextureOptions,
-    ) -> TextureHandle {
+    ) -> TextureHandle
+    where
+        T: ImageData + 'static,
+    {
         let name = name.into();
-        let image = image.into();
+        // let image = image.into();
         let max_texture_side = self.input(|i| i.max_texture_side);
         debug_assert!(
             image.width() <= max_texture_side && image.height() <= max_texture_side,

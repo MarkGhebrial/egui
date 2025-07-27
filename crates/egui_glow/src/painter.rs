@@ -516,19 +516,23 @@ impl Painter {
             self.gl.bind_texture(glow::TEXTURE_2D, Some(glow_texture));
         }
 
-        match &delta.image {
-            egui::ImageData::Color(image) => {
-                assert_eq!(
-                    image.width() * image.height(),
-                    image.pixels.len(),
-                    "Mismatch between texture size and texel count"
-                );
+        // TODO: Add assertion for length of delta.image.pixels()
+        let data: &[u8] = bytemuck::cast_slice(delta.image.pixels());
+        self.upload_texture_srgb(delta.pos, delta.image.size(), delta.options, data);
 
-                let data: &[u8] = bytemuck::cast_slice(image.pixels.as_ref());
+        // match &delta.image {
+        //     egui::ImageData::Color(image) => {
+        //         assert_eq!(
+        //             image.width() * image.height(),
+        //             image.pixels.len(),
+        //             "Mismatch between texture size and texel count"
+        //         );
 
-                self.upload_texture_srgb(delta.pos, image.size, delta.options, data);
-            }
-        };
+        //         let data: &[u8] = bytemuck::cast_slice(image.pixels.as_ref());
+
+        //         self.upload_texture_srgb(delta.pos, image.size, delta.options, data);
+        //     }
+        // };
     }
 
     fn upload_texture_srgb(

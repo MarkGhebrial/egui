@@ -28,7 +28,10 @@ impl TextureManager {
     /// MUST have a white pixel at (0,0) ([`crate::WHITE_UV`]).
     ///
     /// The texture is given a retain-count of `1`, requiring one call to [`Self::free`] to free it.
-    pub fn alloc(&mut self, name: String, image: ImageData, options: TextureOptions) -> TextureId {
+    pub fn alloc<T>(&mut self, name: String, image: T, options: TextureOptions) -> TextureId
+    where
+        T: ImageData + 'static,
+    {
         let id = TextureId::Managed(self.next_id);
         self.next_id += 1;
 
@@ -271,8 +274,9 @@ pub enum TextureWrapMode {
 /// What has been allocated and freed during the last period.
 ///
 /// These are commands given to the integration painter.
-#[derive(Clone, Default, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+// #[derive(Default, PartialEq, Eq)]
+#[derive(Default)]
+// #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[must_use = "The painter must take care of this"]
 pub struct TexturesDelta {
     /// New or changed textures. Apply before painting.

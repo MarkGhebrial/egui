@@ -555,17 +555,20 @@ impl Renderer {
             depth_or_array_layers: 1,
         };
 
-        let data_color32 = match &image_delta.image {
-            epaint::ImageData::Color(image) => {
-                assert_eq!(
-                    width as usize * height as usize,
-                    image.pixels.len(),
-                    "Mismatch between texture size and texel count"
-                );
-                Cow::Borrowed(&image.pixels)
-            }
-        };
-        let data_bytes: &[u8] = bytemuck::cast_slice(data_color32.as_slice());
+        // let data_color32 = match &image_delta.image {
+        //     epaint::ImageData::Color(image) => {
+        //         assert_eq!(
+        //             width as usize * height as usize,
+        //             image.pixels.len(),
+        //             "Mismatch between texture size and texel count"
+        //         );
+        //         Cow::Borrowed(&image.pixels)
+        //     }
+        // };
+
+        // TODO: Add the assertion in the commented out code block back in
+        let data_color32 = image_delta.image.pixels();
+        let data_bytes: &[u8] = bytemuck::cast_slice(data_color32.as_slice()); // Cast the slice of Color32 to a slice of u8
 
         let queue_write_data_to_texture = |texture, origin| {
             profiling::scope!("write_texture");

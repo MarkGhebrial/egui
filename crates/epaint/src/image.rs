@@ -1,45 +1,70 @@
+use std::sync::Arc;
+
 use emath::Vec2;
 
 use crate::{Color32, textures::TextureOptions};
-use std::sync::Arc;
 
 /// An image stored in RAM.
 ///
-/// To load an image file, see [`ColorImage::from_rgba_unmultiplied`].
-///
-/// This is currently an enum with only one variant, but more image types may be added in the future.
+/// This is a trait that can be implemented for any type representing an image.
+/// By default, it is only implemented for [`ColorImage`] and [`Arc<ColorImage>`].
 ///
 /// See also: [`ColorImage`].
-#[derive(Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-pub enum ImageData {
-    /// RGBA image.
-    Color(Arc<ColorImage>),
+pub trait ImageData: Send + Sync + 'static {
+    fn size(&self) -> [usize; 2];
+
+    fn width(&self) -> usize;
+
+    fn height(&self) -> usize;
+
+    fn bytes_per_pixel(&self) -> usize;
+
+    fn pixels(&self) -> &Vec<Color32>;
 }
 
-impl ImageData {
-    pub fn size(&self) -> [usize; 2] {
-        match self {
-            Self::Color(image) => image.size,
-        }
+impl ImageData for ColorImage {
+    fn size(&self) -> [usize; 2] {
+        self.size
     }
 
-    pub fn width(&self) -> usize {
-        self.size()[0]
+    fn width(&self) -> usize {
+        self.size[0]
     }
 
-    pub fn height(&self) -> usize {
-        self.size()[1]
+    fn height(&self) -> usize {
+        self.size[1]
     }
 
-    pub fn bytes_per_pixel(&self) -> usize {
-        match self {
-            Self::Color(_) => 4,
-        }
+    fn bytes_per_pixel(&self) -> usize {
+        4
+    }
+
+    fn pixels(&self) -> &Vec<Color32> {
+        &self.pixels
     }
 }
 
-// ----------------------------------------------------------------------------
+impl ImageData for Arc<ColorImage> {
+    fn size(&self) -> [usize; 2] {
+        self.size
+    }
+
+    fn width(&self) -> usize {
+        self.size[0]
+    }
+
+    fn height(&self) -> usize {
+        self.size[1]
+    }
+
+    fn bytes_per_pixel(&self) -> usize {
+        4
+    }
+
+    fn pixels(&self) -> &Vec<Color32> {
+        &self.pixels
+    }
+}
 
 /// A 2D RGBA color image in RAM.
 #[derive(Clone, Default, PartialEq, Eq)]
@@ -320,20 +345,6 @@ impl std::ops::IndexMut<(usize, usize)> for ColorImage {
     }
 }
 
-impl From<ColorImage> for ImageData {
-    #[inline(always)]
-    fn from(image: ColorImage) -> Self {
-        Self::Color(Arc::new(image))
-    }
-}
-
-impl From<Arc<ColorImage>> for ImageData {
-    #[inline]
-    fn from(image: Arc<ColorImage>) -> Self {
-        Self::Color(image)
-    }
-}
-
 impl std::fmt::Debug for ColorImage {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ColorImage")
@@ -403,8 +414,8 @@ impl AlphaFromCoverage {
 /// A change to an image.
 ///
 /// Either a whole new image, or an update to a rectangular region of it.
-#[derive(Clone, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+// #[derive(Clone, PartialEq, Eq)]
+// #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[must_use = "The painter must take care of this"]
 pub struct ImageDelta {
     /// What to set the texture to.
@@ -412,7 +423,7 @@ pub struct ImageDelta {
     /// If [`Self::pos`] is `None`, this describes the whole texture.
     ///
     /// If [`Self::pos`] is `Some`, this describes a patch of the whole image starting at [`Self::pos`].
-    pub image: ImageData,
+    pub image: Box<dyn ImageData>,
 
     pub options: TextureOptions,
 
@@ -424,18 +435,24 @@ pub struct ImageDelta {
 
 impl ImageDelta {
     /// Update the whole texture.
-    pub fn full(image: impl Into<ImageData>, options: TextureOptions) -> Self {
+    pub fn full<T>(image: T, options: TextureOptions) -> Self
+    where
+        T: ImageData + 'static,
+    {
         Self {
-            image: image.into(),
+            image: Box::new(image),
             options,
             pos: None,
         }
     }
 
     /// Update a sub-region of an existing texture.
-    pub fn partial(pos: [usize; 2], image: impl Into<ImageData>, options: TextureOptions) -> Self {
+    pub fn partial<T>(pos: [usize; 2], image: T, options: TextureOptions) -> Self
+    where
+        T: ImageData + 'static,
+    {
         Self {
-            image: image.into(),
+            image: Box::new(image),
             options,
             pos: Some(pos),
         }

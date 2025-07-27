@@ -67,23 +67,24 @@ impl TextureHandle {
 
     /// Assign a new image to an existing texture.
     #[expect(clippy::needless_pass_by_ref_mut)] // Intentionally hide interiority of mutability
-    pub fn set(&mut self, image: impl Into<ImageData>, options: TextureOptions) {
+    pub fn set<T>(&mut self, image: T, options: TextureOptions)
+    where
+        T: ImageData,
+    {
         self.tex_mngr
             .write()
-            .set(self.id, ImageDelta::full(image.into(), options));
+            .set(self.id, ImageDelta::full(image, options));
     }
 
     /// Assign a new image to a subregion of the whole texture.
     #[expect(clippy::needless_pass_by_ref_mut)] // Intentionally hide interiority of mutability
-    pub fn set_partial(
-        &mut self,
-        pos: [usize; 2],
-        image: impl Into<ImageData>,
-        options: TextureOptions,
-    ) {
+    pub fn set_partial<T>(&mut self, pos: [usize; 2], image: T, options: TextureOptions)
+    where
+        T: ImageData,
+    {
         self.tex_mngr
             .write()
-            .set(self.id, ImageDelta::partial(pos, image.into(), options));
+            .set(self.id, ImageDelta::partial(pos, image, options));
     }
 
     /// width x height

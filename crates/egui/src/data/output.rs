@@ -5,7 +5,7 @@ use crate::{RepaintCause, ViewportIdMap, ViewportOutput, WidgetType};
 /// What egui emits each frame from [`crate::Context::run`].
 ///
 /// The backend should use this.
-#[derive(Clone, Default)]
+#[derive(Default)]
 pub struct FullOutput {
     /// Non-rendering related output.
     pub platform_output: PlatformOutput,
