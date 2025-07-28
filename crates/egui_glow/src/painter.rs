@@ -4,6 +4,7 @@
 use std::{collections::HashMap, sync::Arc};
 
 use egui::{
+    Color32,
     emath::Rect,
     epaint::{Mesh, PaintCallbackInfo, Primitive, Vertex, image::PixelType},
 };
@@ -516,15 +517,42 @@ impl Painter {
             self.gl.bind_texture(glow::TEXTURE_2D, Some(glow_texture));
         }
 
+        // TODO: Render all pixel types directly, without converting to sRGBA first
         match delta.image.pixel_type() {
             PixelType::Gray => {
-                unimplemented!()
+                let data: Vec<Color32> = delta
+                    .image
+                    .data()
+                    .iter()
+                    .map(|byte| Color32::from_gray(*byte))
+                    .collect();
+                let data: &[u8] = bytemuck::cast_slice(&data);
+
+                self.upload_texture_srgb(delta.pos, delta.image.size(), delta.options, data);
             }
             PixelType::Rgb => {
-                unimplemented!()
+                let data: Vec<Color32> = delta
+                    .image
+                    .data()
+                    .chunks_exact(3)
+                    .map(|bytes| Color32::from_rgb(bytes[0], bytes[1], bytes[2]))
+                    .collect();
+                let data: &[u8] = bytemuck::cast_slice(&data);
+
+                self.upload_texture_srgb(delta.pos, delta.image.size(), delta.options, data);
             }
             PixelType::RgbaUnmultiplied => {
-                unimplemented!()
+                let data: Vec<Color32> = delta
+                    .image
+                    .data()
+                    .chunks_exact(4)
+                    .map(|bytes| {
+                        Color32::from_rgba_unmultiplied(bytes[0], bytes[1], bytes[2], bytes[3])
+                    })
+                    .collect();
+                let data: &[u8] = bytemuck::cast_slice(&data);
+
+                self.upload_texture_srgb(delta.pos, delta.image.size(), delta.options, data);
             }
             PixelType::RgbaPremultiplied => {
                 // Convert from a slice of Color32 to a slice of bytes
