@@ -59,9 +59,11 @@ log = ["dep:log", "epaint/log"]
 ## [`mint`](https://docs.rs/mint) enables interoperability with other math libraries such as [`glam`](https://docs.rs/glam) and [`nalgebra`](https://docs.rs/nalgebra).
 mint = ["epaint/mint"]
 
+## Enable support for displaying opencv Mats
+opencv = ["epaint/opencv"]
+
 ## Enable persistence of memory (window positions etc).
 persistence = ["serde", "epaint/serde", "ron"]
-
 
 ## Enable parallel tessellation using [`rayon`](https://docs.rs/rayon).
 ##

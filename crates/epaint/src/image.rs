@@ -36,15 +36,60 @@ impl PixelType {
 ///
 /// See also: [`ColorImage`].
 pub trait ImageData: Send + Sync + 'static {
+    /// Returns the width and height of the image in pixels
     fn size(&self) -> [usize; 2];
 
+    /// Returns the width of the image in pixels
     fn width(&self) -> usize;
 
+    /// Returns the height of the image in pixels
     fn height(&self) -> usize;
 
+    /// Returns the type of color encoding used by the pixels in the image
     fn pixel_type(&self) -> PixelType;
 
+    /// Returns the raw bytes of the pixels. These must be interpreted according
+    /// to the pixel type returned by [`pixel_type`].
+    ///
+    /// `self.width() * self.height() * self.pixel_type().bytes_per_pixel()` MUST
+    /// EQUAL `data.len()`
     fn data(&self) -> &[u8];
+}
+
+#[cfg(feature = "opencv")]
+use opencv::core::{Mat, MatTraitConst, MatTraitConstManual as _};
+
+#[cfg(feature = "opencv")]
+impl ImageData for Mat {
+    fn size(&self) -> [usize; 2] {
+        // self.channels()
+        let size = MatTraitConst::size(self).unwrap();
+        [size.width as usize, size.height as usize]
+    }
+
+    fn width(&self) -> usize {
+        let size = MatTraitConst::size(self).unwrap();
+        size.width as usize
+    }
+
+    fn height(&self) -> usize {
+        let size = MatTraitConst::size(self).unwrap();
+        size.height as usize
+    }
+
+    fn pixel_type(&self) -> PixelType {
+        match self.channels() {
+            1 => PixelType::Gray,
+            3 => PixelType::Rgb,
+            4 => PixelType::RgbaPremultiplied,
+            n => panic!("Mats with {n} channels are not supported"),
+        }
+    }
+
+    /// Panics if the mat is not continuous
+    fn data(&self) -> &[u8] {
+        self.data_bytes().unwrap()
+    }
 }
 
 impl ImageData for ColorImage {
