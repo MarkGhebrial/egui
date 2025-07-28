@@ -275,7 +275,7 @@ pub enum TextureWrapMode {
 ///
 /// These are commands given to the integration painter.
 // #[derive(Default, PartialEq, Eq)]
-#[derive(Default)]
+#[derive(Clone, Default)]
 // #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[must_use = "The painter must take care of this"]
 pub struct TexturesDelta {

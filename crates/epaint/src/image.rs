@@ -440,6 +440,7 @@ impl AlphaFromCoverage {
 ///
 /// Either a whole new image, or an update to a rectangular region of it.
 // #[derive(Clone, PartialEq, Eq)]
+#[derive(Clone)]
 // #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[must_use = "The painter must take care of this"]
 pub struct ImageDelta {
@@ -448,7 +449,7 @@ pub struct ImageDelta {
     /// If [`Self::pos`] is `None`, this describes the whole texture.
     ///
     /// If [`Self::pos`] is `Some`, this describes a patch of the whole image starting at [`Self::pos`].
-    pub image: Box<dyn ImageData>,
+    pub image: Arc<dyn ImageData>, // This is an Arc instead of a Box because kittest requires ImageDelta to implement Clone
 
     pub options: TextureOptions,
 
@@ -465,7 +466,7 @@ impl ImageDelta {
         T: ImageData + 'static,
     {
         Self {
-            image: Box::new(image),
+            image: Arc::new(image),
             options,
             pos: None,
         }
@@ -477,7 +478,7 @@ impl ImageDelta {
         T: ImageData + 'static,
     {
         Self {
-            image: Box::new(image),
+            image: Arc::new(image),
             options,
             pos: Some(pos),
         }
