@@ -3,7 +3,8 @@
 use std::{borrow::Cow, num::NonZeroU64, ops::Range};
 
 use ahash::HashMap;
-use epaint::{PaintCallbackInfo, Primitive, Vertex, emath::NumExt as _};
+use egui::Color32;
+use epaint::{PaintCallbackInfo, Primitive, Vertex, emath::NumExt as _, image::PixelType};
 
 use wgpu::util::DeviceExt as _;
 
@@ -555,20 +556,62 @@ impl Renderer {
             depth_or_array_layers: 1,
         };
 
-        // let data_color32 = match &image_delta.image {
-        //     epaint::ImageData::Color(image) => {
-        //         assert_eq!(
-        //             width as usize * height as usize,
-        //             image.pixels.len(),
-        //             "Mismatch between texture size and texel count"
-        //         );
-        //         Cow::Borrowed(&image.pixels)
-        //     }
-        // };
+        // Make sure the image has the expected amount of bytes
+        let image = &image_delta.image;
+        assert_eq!(
+            image.pixel_type().bytes_per_pixel() * image.width() * image.height(),
+            image.data().len(),
+            "Mismatch between texture size and texel count"
+        );
 
-        // TODO: Add the assertion in the commented out code block back in
-        let data_color32 = image_delta.image.pixels();
-        let data_bytes: &[u8] = bytemuck::cast_slice(data_color32.as_slice()); // Cast the slice of Color32 to a slice of u8
+        // TODO: Render non sRGB images without reencoding all the pixels
+
+        let mut _data_vec: Vec<u8> = Vec::with_capacity(0); // If the pixels need to be reencoded, the reencoded pixels will be stored in this vec
+        let data_srgb_bytes: &[u8] = match image.pixel_type() {
+            // Iterate through all the pixels and convert them from gray to sRGB
+            PixelType::Gray => {
+                // This is a slow process
+                _data_vec = image_delta
+                    .image
+                    .data()
+                    .iter()
+                    .map(|byte| bytemuck::cast(Color32::from_gray(*byte)))
+                    .collect::<Vec<u8>>();
+
+                _data_vec.as_slice()
+            }
+
+            // Iterate through all the pixels and convert them from RGB to sRGB
+            PixelType::Rgb => {
+                _data_vec = image_delta
+                    .image
+                    .data()
+                    .chunks_exact(3)
+                    .map(|bytes| bytemuck::cast(Color32::from_rgb(bytes[0], bytes[1], bytes[2])))
+                    .collect::<Vec<u8>>();
+
+                _data_vec.as_slice()
+            }
+
+            // Iterate through all the pixels and convert them from linear RGBa to sRGB
+            PixelType::RgbaUnmultiplied => {
+                _data_vec = image_delta
+                    .image
+                    .data()
+                    .chunks_exact(4)
+                    .map(|bytes| {
+                        bytemuck::cast(Color32::from_rgba_unmultiplied(
+                            bytes[0], bytes[1], bytes[2], bytes[3],
+                        ))
+                    })
+                    .collect::<Vec<u8>>();
+
+                _data_vec.as_slice()
+            }
+
+            // The pixels are already in the correct format, so do nothing
+            PixelType::RgbaPremultiplied => image_delta.image.data(),
+        };
 
         let queue_write_data_to_texture = |texture, origin| {
             profiling::scope!("write_texture");
@@ -579,7 +622,7 @@ impl Renderer {
                     origin,
                     aspect: wgpu::TextureAspect::All,
                 },
-                data_bytes,
+                data_srgb_bytes,
                 wgpu::TexelCopyBufferLayout {
                     offset: 0,
                     bytes_per_row: Some(4 * width),

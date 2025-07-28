@@ -38,7 +38,7 @@ impl TextureManager {
         self.metas.entry(id).or_insert_with(|| TextureMeta {
             name,
             size: image.size(),
-            bytes_per_pixel: image.bytes_per_pixel(),
+            bytes_per_pixel: image.pixel_type().bytes_per_pixel(),
             retain_count: 1,
             options,
         });
@@ -60,7 +60,7 @@ impl TextureManager {
             } else {
                 // whole update
                 meta.size = delta.image.size();
-                meta.bytes_per_pixel = delta.image.bytes_per_pixel();
+                meta.bytes_per_pixel = delta.image.pixel_type().bytes_per_pixel();
                 // since we update the whole image, we can discard all old enqueued deltas
                 self.delta.set.retain(|(x, _)| x != &id);
             }

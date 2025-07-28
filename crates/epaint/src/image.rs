@@ -4,6 +4,31 @@ use emath::Vec2;
 
 use crate::{Color32, textures::TextureOptions};
 
+/// The type of pixel used by an [`ImageData`] instance.
+pub enum PixelType {
+    /// Single channel 8-bit black and white image
+    Gray,
+
+    /// Three channel linear RGB image
+    Rgb,
+
+    /// Four channel linear RGBA image
+    RgbaUnmultiplied,
+
+    /// Four channel sRGB image
+    RgbaPremultiplied,
+}
+
+impl PixelType {
+    pub fn bytes_per_pixel(&self) -> usize {
+        match self {
+            Self::Gray => 1,
+            Self::Rgb => 3,
+            Self::RgbaPremultiplied | Self::RgbaUnmultiplied => 4,
+        }
+    }
+}
+
 /// An image stored in RAM.
 ///
 /// This is a trait that can be implemented for any type representing an image.
@@ -17,9 +42,9 @@ pub trait ImageData: Send + Sync + 'static {
 
     fn height(&self) -> usize;
 
-    fn bytes_per_pixel(&self) -> usize;
+    fn pixel_type(&self) -> PixelType;
 
-    fn pixels(&self) -> &Vec<Color32>;
+    fn data(&self) -> &[u8];
 }
 
 impl ImageData for ColorImage {
@@ -35,12 +60,12 @@ impl ImageData for ColorImage {
         self.size[1]
     }
 
-    fn bytes_per_pixel(&self) -> usize {
-        4
+    fn pixel_type(&self) -> PixelType {
+        PixelType::RgbaPremultiplied
     }
 
-    fn pixels(&self) -> &Vec<Color32> {
-        &self.pixels
+    fn data(&self) -> &[u8] {
+        bytemuck::cast_slice(self.pixels.as_slice())
     }
 }
 
@@ -57,12 +82,12 @@ impl ImageData for Arc<ColorImage> {
         self.size[1]
     }
 
-    fn bytes_per_pixel(&self) -> usize {
-        4
+    fn pixel_type(&self) -> PixelType {
+        PixelType::RgbaPremultiplied
     }
 
-    fn pixels(&self) -> &Vec<Color32> {
-        &self.pixels
+    fn data(&self) -> &[u8] {
+        bytemuck::cast_slice(self.pixels.as_slice())
     }
 }
 

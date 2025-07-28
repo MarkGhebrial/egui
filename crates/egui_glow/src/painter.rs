@@ -5,7 +5,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use egui::{
     emath::Rect,
-    epaint::{Mesh, PaintCallbackInfo, Primitive, Vertex},
+    epaint::{Mesh, PaintCallbackInfo, Primitive, Vertex, image::PixelType},
 };
 use glow::HasContext as _;
 use memoffset::offset_of;
@@ -516,9 +516,27 @@ impl Painter {
             self.gl.bind_texture(glow::TEXTURE_2D, Some(glow_texture));
         }
 
+        match delta.image.pixel_type() {
+            PixelType::Gray => {
+                unimplemented!()
+            }
+            PixelType::Rgb => {
+                unimplemented!()
+            }
+            PixelType::RgbaUnmultiplied => {
+                unimplemented!()
+            }
+            PixelType::RgbaPremultiplied => {
+                // Convert from a slice of Color32 to a slice of bytes
+                let data: &[u8] = bytemuck::cast_slice(delta.image.data());
+
+                self.upload_texture_srgb(delta.pos, delta.image.size(), delta.options, data);
+            }
+        }
+
         // TODO: Add assertion for length of delta.image.pixels()
-        let data: &[u8] = bytemuck::cast_slice(delta.image.pixels());
-        self.upload_texture_srgb(delta.pos, delta.image.size(), delta.options, data);
+        // let data: &[u8] = bytemuck::cast_slice(delta.image.pixels());
+        // self.upload_texture_srgb(delta.pos, delta.image.size(), delta.options, data);
 
         // match &delta.image {
         //     egui::ImageData::Color(image) => {
