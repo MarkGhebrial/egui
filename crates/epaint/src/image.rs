@@ -56,6 +56,31 @@ pub trait ImageData: Send + Sync + 'static {
     fn data(&self) -> &[u8];
 }
 
+impl<T> ImageData for Arc<T>
+where
+    T: ImageData,
+{
+    fn size(&self) -> [usize; 2] {
+        self.as_ref().size()
+    }
+
+    fn width(&self) -> usize {
+        self.as_ref().width()
+    }
+
+    fn height(&self) -> usize {
+        self.as_ref().height()
+    }
+
+    fn pixel_type(&self) -> PixelType {
+        self.as_ref().pixel_type()
+    }
+
+    fn data(&self) -> &[u8] {
+        self.as_ref().data()
+    }
+}
+
 #[cfg(feature = "opencv")]
 use opencv::core::{Mat, MatTraitConst, MatTraitConstManual as _};
 
@@ -110,28 +135,7 @@ impl ImageData for ColorImage {
     }
 
     fn data(&self) -> &[u8] {
-        bytemuck::cast_slice(self.pixels.as_slice())
-    }
-}
-
-impl ImageData for Arc<ColorImage> {
-    fn size(&self) -> [usize; 2] {
-        self.size
-    }
-
-    fn width(&self) -> usize {
-        self.size[0]
-    }
-
-    fn height(&self) -> usize {
-        self.size[1]
-    }
-
-    fn pixel_type(&self) -> PixelType {
-        PixelType::RgbaPremultiplied
-    }
-
-    fn data(&self) -> &[u8] {
+        // TODO: bytemuck is currently an optional dependency
         bytemuck::cast_slice(self.pixels.as_slice())
     }
 }
