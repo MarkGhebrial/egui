@@ -4,7 +4,7 @@ use std::ops::{RangeFrom, RangeFull, RangeInclusive, RangeToInclusive};
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[derive(bytemuck::Pod, bytemuck::Zeroable)]
 pub struct Rangef {
     pub min: f32,
     pub max: f32,

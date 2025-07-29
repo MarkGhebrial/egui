@@ -7,7 +7,7 @@ use crate::{Pos2, Rect, Vec2};
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[derive(bytemuck::Pod, bytemuck::Zeroable)]
 pub struct TSTransform {
     /// Scaling applied first, scaled around (0, 0).
     pub scaling: f32,

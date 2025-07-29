@@ -14,7 +14,7 @@ use crate::{Div, Mul, Vec2, lerp};
 #[repr(C)]
 #[derive(Clone, Copy, Default, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[derive(bytemuck::Pod, bytemuck::Zeroable)]
 pub struct Pos2 {
     /// How far to the right.
     pub x: f32,

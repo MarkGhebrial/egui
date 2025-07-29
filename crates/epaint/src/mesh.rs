@@ -8,7 +8,7 @@ use emath::{Pos2, Rect, Rot2, TSTransform, Vec2};
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 #[cfg(any(not(feature = "unity"), feature = "_override_unity"))]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[derive(bytemuck::Pod, bytemuck::Zeroable)]
 pub struct Vertex {
     /// Logical pixel coordinates (points).
     /// (0,0) is the top left corner of the screen.
@@ -27,7 +27,7 @@ pub struct Vertex {
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 #[cfg(all(feature = "unity", not(feature = "_override_unity")))]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[derive(bytemuck::Pod, bytemuck::Zeroable)]
 pub struct Vertex {
     /// Logical pixel coordinates (points).
     /// (0,0) is the top left corner of the screen.

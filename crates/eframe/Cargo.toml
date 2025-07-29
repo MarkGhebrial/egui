@@ -122,7 +122,7 @@ __screenshot = []
 
 [dependencies]
 egui = { workspace = true, default-features = false, features = [
-  "bytemuck",
+  # "bytemuck",
   "log",
 ] }
 

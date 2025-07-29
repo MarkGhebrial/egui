@@ -31,7 +31,7 @@ default = ["default_fonts"]
 accesskit = ["dep:accesskit"]
 
 ## [`bytemuck`](https://docs.rs/bytemuck) enables you to cast [`epaint::Vertex`], [`emath::Vec2`] etc to `&[u8]`.
-bytemuck = ["epaint/bytemuck"]
+# bytemuck = ["epaint/bytemuck"]
 
 ## Show a debug-ui on hover including the stacktrace to the hovered item.
 ## This is very useful in finding the code that creates a part of the UI.

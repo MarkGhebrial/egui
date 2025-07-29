@@ -21,7 +21,7 @@ use std::ops::{BitOr, BitOrAssign};
 #[repr(C)]
 #[derive(Clone, Copy, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[cfg_attr(feature = "bytemuck", derive(bytemuck::Pod, bytemuck::Zeroable))]
+#[derive(bytemuck::Pod, bytemuck::Zeroable)]
 pub struct Rect {
     /// One of the corners of the rectangle, usually the left top one.
     pub min: Pos2,

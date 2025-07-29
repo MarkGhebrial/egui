@@ -32,7 +32,7 @@ rustdoc-args = ["--generate-link-to-definition"]
 default = ["default_fonts"]
 
 ## [`bytemuck`](https://docs.rs/bytemuck) enables you to cast [`Vertex`] to `&[u8]`.
-bytemuck = ["dep:bytemuck", "emath/bytemuck", "ecolor/bytemuck"]
+# bytemuck = ["dep:bytemuck", "emath/bytemuck", "ecolor/bytemuck"]
 
 ## [`cint`](https://docs.rs/cint) enables interoperability with other color libraries.
 cint = ["ecolor/cint"]
@@ -84,7 +84,7 @@ parking_lot.workspace = true   # Using parking_lot over std::sync::Mutex gives 5
 profiling = { workspace = true}
 
 #! ### Optional dependencies
-bytemuck = { workspace = true, optional = true, features = ["derive"] }
+bytemuck = { workspace = true, optional = false, features = ["derive"] }
 
 opencv = { version = "0.95", optional = true, default-features = false }
 

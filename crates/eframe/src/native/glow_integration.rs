@@ -1549,6 +1549,8 @@ fn save_screenshot_and_exit(
     painter: &egui_glow::Painter,
     screen_size_in_pixels: [u32; 2],
 ) {
+    use egui::ImageData;
+
     assert!(
         path.ends_with(".png"),
         "Expected EFRAME_SCREENSHOT_TO to end with '.png', got {path:?}"
@@ -1556,7 +1558,7 @@ fn save_screenshot_and_exit(
     let screenshot = painter.read_screen_rgba(screen_size_in_pixels);
     image::save_buffer(
         path,
-        screenshot.as_raw(),
+        screenshot.data(),
         screenshot.width() as u32,
         screenshot.height() as u32,
         image::ColorType::Rgba8,

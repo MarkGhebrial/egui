@@ -50,7 +50,7 @@ x11 = ["winit?/x11"]
 
 
 [dependencies]
-egui = { workspace = true, default-features = false, features = ["bytemuck"] }
+egui = { workspace = true, default-features = false }
 egui-winit = { workspace = true, optional = true, default-features = false }
 
 ahash.workspace = true

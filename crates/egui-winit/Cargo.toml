@@ -36,7 +36,7 @@ android-game-activity = ["winit/android-game-activity"]
 android-native-activity = ["winit/android-native-activity"]
 
 ## [`bytemuck`](https://docs.rs/bytemuck) enables you to cast [`egui::epaint::Vertex`], [`egui::Vec2`] etc to `&[u8]`.
-bytemuck = ["egui/bytemuck", "dep:bytemuck"]
+# bytemuck = ["egui/bytemuck", "dep:bytemuck"]
 
 ## Enable cut/copy/paste to OS clipboard.
 ## If disabled a clipboard will be simulated so you can still copy/paste within the egui app.

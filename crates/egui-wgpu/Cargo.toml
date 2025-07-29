@@ -51,7 +51,7 @@ fragile-send-sync-non-atomic-wasm = ["wgpu/fragile-send-sync-non-atomic-wasm"]
 
 [dependencies]
 egui = { workspace = true, default-features = false }
-epaint = { workspace = true, default-features = false, features = ["bytemuck"] }
+epaint = { workspace = true, default-features = false }
 
 ahash.workspace = true
 bytemuck.workspace = true
