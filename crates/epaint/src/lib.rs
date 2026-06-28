@@ -45,6 +45,8 @@ pub mod textures;
 pub mod util;
 mod viewport;
 
+use std::{hash::Hash, sync::Arc};
+
 pub use self::{
     brush::Brush,
     color::ColorMode,
@@ -94,8 +96,8 @@ pub const WHITE_UV: emath::Pos2 = emath::pos2(0.0, 0.0);
 /// What texture to use in a [`Mesh`] mesh.
 ///
 /// If you don't want to use a texture, use `TextureId::Managed(0)` and the [`WHITE_UV`] for uv-coord.
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[derive(Clone, Debug)]
+// #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub enum TextureId {
     /// Textures allocated using [`TextureManager`].
     ///
@@ -105,6 +107,33 @@ pub enum TextureId {
     /// Your own texture, defined in any which way you want.
     /// The backend renderer will presumably use this to look up what texture to use.
     User(u64),
+
+    /// The texture exists temporarily. It is not created by the user or managed
+    /// by the texture manager.
+    Immediate(Arc<dyn ImageData>),
+}
+
+impl PartialEq for TextureId {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Managed(l0), Self::Managed(r0)) | (Self::User(l0), Self::User(r0)) => l0 == r0,
+            (Self::Immediate(l0), Self::Immediate(r0)) => Arc::ptr_eq(l0, r0),
+            _ => false,
+        }
+    }
+}
+
+impl Eq for TextureId {}
+
+impl Hash for TextureId {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        core::mem::discriminant(self).hash(state);
+        match self {
+            Self::Managed(n) | Self::User(n) => n.hash(state),
+            // We don't need to hash the image_data arc because we don't use this variant of the enum as a key in any hashmaps
+            Self::Immediate(_image_data) => (),
+        }
+    }
 }
 
 impl Default for TextureId {

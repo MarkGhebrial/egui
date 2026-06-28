@@ -440,7 +440,7 @@ pub trait ImageLoader {
 }
 
 /// A texture with a known size.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct SizedTexture {
     pub id: TextureId,
 
@@ -486,7 +486,7 @@ impl<'a> From<&'a TextureHandle> for SizedTexture {
 /// This is similar to [`std::task::Poll`], but the `Pending` variant
 /// contains an optional `size`, which may be used during layout to
 /// pre-allocate space the image.
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub enum TexturePoll {
     /// Texture is loading.
     Pending {
@@ -514,7 +514,7 @@ impl TexturePoll {
     pub fn texture_id(&self) -> Option<TextureId> {
         match self {
             Self::Pending { .. } => None,
-            Self::Ready { texture } => Some(texture.id),
+            Self::Ready { texture } => Some(texture.id.clone()),
         }
     }
 }

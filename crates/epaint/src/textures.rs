@@ -35,7 +35,7 @@ impl TextureManager {
         let id = TextureId::Managed(self.next_id);
         self.next_id += 1;
 
-        self.metas.entry(id).or_insert_with(|| TextureMeta {
+        self.metas.entry(id.clone()).or_insert_with(|| TextureMeta {
             name,
             size: image.size(),
             bytes_per_pixel: image.pixel_type().bytes_per_pixel(),
@@ -43,7 +43,9 @@ impl TextureManager {
             options,
         });
 
-        self.delta.set.push((id, ImageDelta::full(image, options)));
+        self.delta
+            .set
+            .push((id.clone(), ImageDelta::full(image, options)));
         id
     }
 
@@ -72,7 +74,8 @@ impl TextureManager {
 
     /// Free an existing texture.
     pub fn free(&mut self, id: TextureId) {
-        if let std::collections::hash_map::Entry::Occupied(mut entry) = self.metas.entry(id) {
+        if let std::collections::hash_map::Entry::Occupied(mut entry) = self.metas.entry(id.clone())
+        {
             let meta = entry.get_mut();
             meta.retain_count -= 1;
             if meta.retain_count == 0 {

@@ -44,7 +44,7 @@ pub struct Vertex {
 
 /// Textured triangles in two dimensions.
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+// #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Mesh {
     /// Draw as triangles (i.e. the length is always multiple of three).
     ///
@@ -136,7 +136,7 @@ impl Mesh {
         debug_assert!(other.is_valid(), "Other mesh is invalid");
 
         if self.is_empty() {
-            self.texture_id = other.texture_id;
+            self.texture_id = other.texture_id.clone();
         } else {
             assert_eq!(
                 self.texture_id, other.texture_id,
@@ -284,7 +284,7 @@ impl Mesh {
                     .map(|vi| u16::try_from(vi - min_vindex).unwrap())
                     .collect(),
                 vertices: self.vertices[(min_vindex as usize)..=(max_vindex as usize)].to_vec(),
-                texture_id: self.texture_id,
+                texture_id: self.texture_id.clone(),
             };
             debug_assert!(mesh.is_valid(), "Mesh is invalid");
             output.push(mesh);

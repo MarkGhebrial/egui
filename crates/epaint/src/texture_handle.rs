@@ -24,16 +24,16 @@ pub struct TextureHandle {
 
 impl Drop for TextureHandle {
     fn drop(&mut self) {
-        self.tex_mngr.write().free(self.id);
+        self.tex_mngr.write().free(self.id.clone());
     }
 }
 
 impl Clone for TextureHandle {
     fn clone(&self) -> Self {
-        self.tex_mngr.write().retain(self.id);
+        self.tex_mngr.write().retain(self.id.clone());
         Self {
             tex_mngr: self.tex_mngr.clone(),
-            id: self.id,
+            id: self.id.clone(),
         }
     }
 }
@@ -62,7 +62,7 @@ impl TextureHandle {
 
     #[inline]
     pub fn id(&self) -> TextureId {
-        self.id
+        self.id.clone()
     }
 
     /// Assign a new image to an existing texture.
@@ -73,7 +73,7 @@ impl TextureHandle {
     {
         self.tex_mngr
             .write()
-            .set(self.id, ImageDelta::full(image, options));
+            .set(self.id.clone(), ImageDelta::full(image, options));
     }
 
     /// Assign a new image to a subregion of the whole texture.
@@ -84,14 +84,14 @@ impl TextureHandle {
     {
         self.tex_mngr
             .write()
-            .set(self.id, ImageDelta::partial(pos, image, options));
+            .set(self.id.clone(), ImageDelta::partial(pos, image, options));
     }
 
     /// width x height
     pub fn size(&self) -> [usize; 2] {
         self.tex_mngr
             .read()
-            .meta(self.id)
+            .meta(self.id.clone())
             .map_or([0, 0], |tex| tex.size)
     }
 
@@ -105,7 +105,7 @@ impl TextureHandle {
     pub fn byte_size(&self) -> usize {
         self.tex_mngr
             .read()
-            .meta(self.id)
+            .meta(self.id.clone())
             .map_or(0, |tex| tex.bytes_used())
     }
 
@@ -119,7 +119,7 @@ impl TextureHandle {
     pub fn name(&self) -> String {
         self.tex_mngr
             .read()
-            .meta(self.id)
+            .meta(self.id.clone())
             .map_or_else(|| "<none>".to_owned(), |tex| tex.name.clone())
     }
 }

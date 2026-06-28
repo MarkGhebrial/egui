@@ -517,7 +517,7 @@ impl TextWrapping {
 /// The name comes from typography, where a "galley" is a metal tray
 /// containing a column of set type, usually the size of a page of text.
 #[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+// #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Galley {
     /// The job that this galley is the result of.
     /// Contains the original string and style sections.
@@ -565,7 +565,7 @@ pub struct Galley {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+// #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct PlacedRow {
     /// The position of this [`Row`] relative to the galley.
     ///
@@ -601,7 +601,7 @@ impl std::ops::Deref for PlacedRow {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+// #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Row {
     /// This is included in case there are no glyphs.
     ///
@@ -630,7 +630,7 @@ pub struct Row {
 
 /// The tessellated output of a row.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+// #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct RowVisuals {
     /// The tessellated text, using non-normalized (texel) UV coordinates.
     /// That is, you need to divide the uv coordinates by the texture size.

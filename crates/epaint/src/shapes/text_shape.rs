@@ -8,7 +8,7 @@ use crate::*;
 ///
 /// This needs to be recreated if `pixels_per_point` (dpi scale) changes.
 #[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+// #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct TextShape {
     /// Where the origin of [`Self::galley`] is.
     ///

@@ -1953,17 +1953,19 @@ impl Tessellator {
             };
 
             if fill_rect.is_positive() {
-                let crate::Brush {
-                    fill_texture_id,
-                    uv,
-                } = **brush;
                 let uv_from_pos = |p: Pos2| {
                     pos2(
-                        remap(p.x, rect.x_range(), uv.x_range()),
-                        remap(p.y, rect.y_range(), uv.y_range()),
+                        remap(p.x, rect.x_range(), brush.uv.x_range()),
+                        remap(p.y, rect.y_range(), brush.uv.y_range()),
                     )
                 };
-                path.fill_with_uv(self.feathering, fill, fill_texture_id, uv_from_pos, out);
+                path.fill_with_uv(
+                    self.feathering,
+                    fill,
+                    brush.fill_texture_id.clone(),
+                    uv_from_pos,
+                    out,
+                );
             }
 
             if !stroke.is_empty() {

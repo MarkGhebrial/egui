@@ -4,7 +4,7 @@ use crate::*;
 
 /// How to paint a rectangle.
 #[derive(Clone, Debug, PartialEq)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+// #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct RectShape {
     pub rect: Rect,
 
@@ -178,7 +178,7 @@ impl RectShape {
     pub fn fill_texture_id(&self) -> TextureId {
         self.brush
             .as_ref()
-            .map_or_else(TextureId::default, |brush| brush.fill_texture_id)
+            .map_or_else(TextureId::default, |brush| brush.fill_texture_id.clone())
     }
 }
 

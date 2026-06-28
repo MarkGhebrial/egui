@@ -33,9 +33,10 @@ impl PixelType {
 ///
 /// This is a trait that can be implemented for any type representing an image.
 /// By default, it is only implemented for [`ColorImage`] and [`Arc<ColorImage>`].
+/// If you enable the `opencv` feature, it's also implemented for `opencv::core::Mat`.
 ///
 /// See also: [`ColorImage`].
-pub trait ImageData: Send + Sync + 'static {
+pub trait ImageData: Send + Sync + 'static + std::fmt::Debug {
     /// Returns the width and height of the image in pixels
     fn size(&self) -> [usize; 2];
 
@@ -135,7 +136,6 @@ impl ImageData for ColorImage {
     }
 
     fn data(&self) -> &[u8] {
-        // TODO: bytemuck is currently an optional dependency
         bytemuck::cast_slice(self.pixels.as_slice())
     }
 }

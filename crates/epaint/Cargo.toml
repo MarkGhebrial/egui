@@ -84,9 +84,9 @@ parking_lot.workspace = true   # Using parking_lot over std::sync::Mutex gives 5
 profiling = { workspace = true}
 
 #! ### Optional dependencies
-bytemuck = { workspace = true, optional = false, features = ["derive"] }
+bytemuck = { workspace = true, features = ["derive"] }
 
-opencv = { version = "0.95", optional = true, default-features = false }
+opencv = { version = "0.99", optional = true, default-features = false }
 
 ## Enable this when generating docs.
 document-features = { workspace = true, optional = true }

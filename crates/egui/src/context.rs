@@ -3213,8 +3213,8 @@ impl Context {
         let tex_mngr = self.tex_manager();
         let tex_mngr = tex_mngr.read();
 
-        let mut textures: Vec<_> = tex_mngr.allocated().collect();
-        textures.sort_by_key(|(id, _)| *id);
+        let textures: Vec<_> = tex_mngr.allocated().collect();
+        // textures.sort_by_key(|(id, _)| *id.clone());
 
         let mut bytes = 0;
         for (_, tex) in &textures {
@@ -3242,21 +3242,21 @@ impl Context {
                         .spacing(vec2(16.0, 2.0))
                         .min_row_height(max_preview_size.y)
                         .show(ui, |ui| {
-                            for (&texture_id, meta) in textures {
+                            for (texture_id, meta) in textures {
                                 let [w, h] = meta.size;
                                 let point_size = vec2(w as f32, h as f32) / pixels_per_point;
 
                                 let mut size = point_size;
                                 size *= (max_preview_size.x / size.x).min(1.0);
                                 size *= (max_preview_size.y / size.y).min(1.0);
-                                ui.image(SizedTexture::new(texture_id, size))
+                                ui.image(SizedTexture::new(texture_id.clone(), size))
                                     .on_hover_ui(|ui| {
                                         // show larger on hover
                                         let max_size = 0.5 * ui.ctx().screen_rect().size();
                                         let mut size = point_size;
                                         size *= max_size.x / size.x.max(max_size.x);
                                         size *= max_size.y / size.y.max(max_size.y);
-                                        ui.image(SizedTexture::new(texture_id, size));
+                                        ui.image(SizedTexture::new(texture_id.clone(), size));
                                     });
 
                                 ui.label(format!("{w} x {h}"));

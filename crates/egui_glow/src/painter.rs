@@ -364,13 +364,13 @@ impl Painter {
         profiling::function_scope!();
 
         for (id, image_delta) in &textures_delta.set {
-            self.set_texture(*id, image_delta);
+            self.set_texture(id.clone(), image_delta);
         }
 
         self.paint_primitives(screen_size_px, pixels_per_point, clipped_primitives);
 
-        for &id in &textures_delta.free {
-            self.free_texture(id);
+        for id in &textures_delta.free {
+            self.free_texture(id.clone());
         }
     }
 
@@ -467,7 +467,7 @@ impl Painter {
     #[inline(never)] // Easier profiling
     fn paint_mesh(&mut self, mesh: &Mesh) {
         debug_assert!(mesh.is_valid(), "Mesh is not valid");
-        if let Some(texture) = self.texture(mesh.texture_id) {
+        if let Some(texture) = self.texture(mesh.texture_id.clone()) {
             unsafe {
                 self.gl.bind_buffer(glow::ARRAY_BUFFER, Some(self.vbo));
                 self.gl.buffer_data_u8_slice(
@@ -696,7 +696,7 @@ impl Painter {
         self.assert_not_destroyed();
         let id = egui::TextureId::User(self.next_native_tex_id);
         self.next_native_tex_id += 1;
-        self.textures.insert(id, native);
+        self.textures.insert(id.clone(), native);
         id
     }
 

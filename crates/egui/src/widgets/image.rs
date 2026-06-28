@@ -2,7 +2,7 @@ use std::{borrow::Cow, slice::Iter, sync::Arc, time::Duration};
 
 use emath::{Align, Float as _, GuiRounding as _, NumExt as _, Rot2};
 use epaint::{
-    RectShape,
+    ImageData, RectShape, TextureId,
     text::{LayoutJob, TextFormat, TextWrapping},
 };
 
@@ -20,7 +20,8 @@ use crate::{
 ///
 /// - [`ImageSource::Uri`] will load the image using the [asynchronous loading process][`crate::load`].
 /// - [`ImageSource::Bytes`] will also load the image using the [asynchronous loading process][`crate::load`], but with lower latency.
-/// - [`ImageSource::Texture`] will use the provided texture.
+/// - [`ImageSource::Texture`] will use a texture stored in egui's texture manager.
+/// - [`ImageSource::Immediate`] will use raw pixel data.
 ///
 /// See [`crate::load`] for more information.
 ///
@@ -112,6 +113,11 @@ impl<'a> Image<'a> {
             uri: uri.into(),
             bytes: bytes.into(),
         })
+    }
+
+    /// Load the image from raw pixel data.
+    pub fn from_image_data(image_data: Arc<dyn ImageData>) -> Self {
+        Self::new(ImageSource::Immediate(image_data))
     }
 
     /// Texture options used when creating the texture.
@@ -308,10 +314,7 @@ impl<'a> Image<'a> {
 
     #[inline]
     pub fn size(&self) -> Option<Vec2> {
-        match &self.source {
-            ImageSource::Texture(texture) => Some(texture.size),
-            ImageSource::Uri(_) | ImageSource::Bytes { .. } => None,
-        }
+        self.source.texture_size()
     }
 
     /// Returns the URI of the image.
@@ -596,6 +599,11 @@ pub enum ImageSource<'a> {
     /// and allocating a [`crate::TextureId`] for it.
     Texture(SizedTexture),
 
+    /// Load the image from raw pixels stored in memory. The user is responsible
+    /// for loading and decoding the image. Useful for images that may change
+    /// every frame.
+    Immediate(Arc<dyn ImageData>),
+
     /// Load the image from some raw bytes.
     ///
     /// The [`Bytes`] may be:
@@ -624,6 +632,7 @@ impl std::fmt::Debug for ImageSource<'_> {
         match self {
             ImageSource::Bytes { uri, .. } | ImageSource::Uri(uri) => uri.as_ref().fmt(f),
             ImageSource::Texture(st) => st.id.fmt(f),
+            ImageSource::Immediate(_image_data) => "raw image data".fmt(f),
         }
     }
 }
@@ -635,6 +644,9 @@ impl ImageSource<'_> {
         match self {
             ImageSource::Texture(texture) => Some(texture.size),
             ImageSource::Uri(_) | ImageSource::Bytes { .. } => None,
+            ImageSource::Immediate(image_data) => {
+                Some([image_data.width() as f32, image_data.height() as f32].into())
+            }
         }
     }
 
@@ -653,16 +665,22 @@ impl ImageSource<'_> {
                 ctx.include_bytes(uri.clone(), bytes);
                 ctx.try_load_texture(uri.as_ref(), texture_options, size_hint)
             }
+            Self::Immediate(image_data) => Ok(TexturePoll::Ready {
+                texture: SizedTexture {
+                    id: TextureId::Immediate(image_data.clone()),
+                    size: [image_data.width() as f32, image_data.height() as f32].into(),
+                },
+            }),
         }
     }
 
     /// Get the `uri` that this image was constructed from.
     ///
-    /// This will return `None` for [`Self::Texture`].
+    /// This will return `None` for [`Self::Texture`] and [`Self::Immediate`].
     pub fn uri(&self) -> Option<&str> {
         match self {
             ImageSource::Bytes { uri, .. } | ImageSource::Uri(uri) => Some(uri),
-            ImageSource::Texture(_) => None,
+            ImageSource::Texture(_) | ImageSource::Immediate(_) => None,
         }
     }
 }
@@ -871,7 +889,7 @@ pub fn paint_texture_at(
                 "Image had both rounding and rotation. Please pick only one"
             );
 
-            let mut mesh = Mesh::with_texture(texture.id);
+            let mut mesh = Mesh::with_texture(texture.id.clone());
             mesh.add_rect_with_uv(rect, options.uv, options.tint);
             mesh.rotate(rot, rect.min + origin * rect.size());
             painter.add(Shape::mesh(mesh));
@@ -879,7 +897,7 @@ pub fn paint_texture_at(
         None => {
             painter.add(
                 RectShape::filled(rect, options.corner_radius, options.tint)
-                    .with_texture(texture.id, options.uv),
+                    .with_texture(texture.id.clone(), options.uv),
             );
         }
     }

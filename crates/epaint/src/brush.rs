@@ -1,8 +1,8 @@
 use crate::{Rect, TextureId};
 
 /// Controls texturing of a [`crate::RectShape`].
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[derive(Clone, Debug, PartialEq, Eq)]
+// #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct Brush {
     /// If the rect should be filled with a texture, which one?
     ///

@@ -28,11 +28,10 @@ default = []
 
 
 [dependencies]
-#! ### Optional dependencies
-
 ## [`bytemuck`](https://docs.rs/bytemuck) enables you to cast `emath` types to `&[u8]`.
-bytemuck = { workspace = true, optional = false, features = ["derive"] }
+bytemuck = { workspace = true, features = ["derive"] }
 
+#! ### Optional dependencies
 ## Enable this when generating docs.
 document-features = { workspace = true, optional = true }
 

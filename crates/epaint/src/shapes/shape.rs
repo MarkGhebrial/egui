@@ -392,7 +392,7 @@ impl Shape {
     #[inline(always)]
     pub fn texture_id(&self) -> crate::TextureId {
         if let Self::Mesh(mesh) = self {
-            mesh.texture_id
+            mesh.texture_id.clone()
         } else if let Self::Rect(rect_shape) = self {
             rect_shape.fill_texture_id()
         } else {

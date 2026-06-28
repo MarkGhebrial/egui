@@ -398,7 +398,7 @@ impl Painter {
                 renderer.update_texture(
                     &render_state.device,
                     &render_state.queue,
-                    *id,
+                    id.clone(),
                     image_delta,
                 );
             }
