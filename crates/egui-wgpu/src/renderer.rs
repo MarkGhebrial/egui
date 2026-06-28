@@ -566,52 +566,60 @@ impl Renderer {
 
         // TODO: Render non sRGB images without reencoding all the pixels
 
-        let mut _data_vec: Vec<u8> = Vec::with_capacity(0); // If the pixels need to be reencoded, the reencoded pixels will be stored in this vec
-        let data_srgb_bytes: &[u8] = match image.pixel_type() {
-            // Iterate through all the pixels and convert them from gray to sRGB
-            PixelType::Gray => {
-                // This is a slow process
-                _data_vec = image_delta
-                    .image
-                    .data()
-                    .iter()
-                    .map(|byte| bytemuck::cast(Color32::from_gray(*byte)))
-                    .collect::<Vec<u8>>();
-
-                _data_vec.as_slice()
-            }
-
-            // Iterate through all the pixels and convert them from RGB to sRGB
-            PixelType::Rgb => {
-                _data_vec = image_delta
-                    .image
-                    .data()
-                    .chunks_exact(3)
-                    .map(|bytes| bytemuck::cast(Color32::from_rgb(bytes[0], bytes[1], bytes[2])))
-                    .collect::<Vec<u8>>();
-
-                _data_vec.as_slice()
-            }
-
-            // Iterate through all the pixels and convert them from linear RGBa to sRGB
-            PixelType::RgbaUnmultiplied => {
-                _data_vec = image_delta
-                    .image
-                    .data()
-                    .chunks_exact(4)
-                    .map(|bytes| {
-                        bytemuck::cast(Color32::from_rgba_unmultiplied(
-                            bytes[0], bytes[1], bytes[2], bytes[3],
-                        ))
-                    })
-                    .collect::<Vec<u8>>();
-
-                _data_vec.as_slice()
-            }
-
-            // The pixels are already in the correct format, so do nothing
-            PixelType::RgbaPremultiplied => image_delta.image.data(),
+        let bytes = image.data();
+        let texture_format = match image.pixel_type() {
+            PixelType::Gray => wgpu::TextureFormat::R8Unorm,
+            PixelType::Rgb => todo!(),
+            PixelType::RgbaUnmultiplied => wgpu::TextureFormat::Rgba8UnormSrgb,
+            PixelType::RgbaPremultiplied => wgpu::TextureFormat::Rgba8UnormSrgb,
         };
+
+        // let mut _data_vec: Vec<u8> = Vec::with_capacity(0); // If the pixels need to be reencoded, the reencoded pixels will be stored in this vec
+        // let data_srgb_bytes: &[u8] = match image.pixel_type() {
+        //     // Iterate through all the pixels and convert them from gray to sRGB
+        //     PixelType::Gray => {
+        //         // This is a slow process
+        //         _data_vec = image_delta
+        //             .image
+        //             .data()
+        //             .iter()
+        //             .map(|byte| bytemuck::cast(Color32::from_gray(*byte)))
+        //             .collect::<Vec<u8>>();
+
+        //         _data_vec.as_slice()
+        //     }
+
+        //     // Iterate through all the pixels and convert them from RGB to sRGB
+        //     PixelType::Rgb => {
+        //         _data_vec = image_delta
+        //             .image
+        //             .data()
+        //             .chunks_exact(3)
+        //             .map(|bytes| bytemuck::cast(Color32::from_rgb(bytes[0], bytes[1], bytes[2])))
+        //             .collect::<Vec<u8>>();
+
+        //         _data_vec.as_slice()
+        //     }
+
+        //     // Iterate through all the pixels and convert them from linear RGBa to sRGB
+        //     PixelType::RgbaUnmultiplied => {
+        //         _data_vec = image_delta
+        //             .image
+        //             .data()
+        //             .chunks_exact(4)
+        //             .map(|bytes| {
+        //                 bytemuck::cast(Color32::from_rgba_unmultiplied(
+        //                     bytes[0], bytes[1], bytes[2], bytes[3],
+        //                 ))
+        //             })
+        //             .collect::<Vec<u8>>();
+
+        //         _data_vec.as_slice()
+        //     }
+
+        //     // The pixels are already in the correct format, so do nothing
+        //     PixelType::RgbaPremultiplied => image_delta.image.data(),
+        // };
 
         let queue_write_data_to_texture = |texture, origin| {
             profiling::scope!("write_texture");
@@ -622,7 +630,7 @@ impl Renderer {
                     origin,
                     aspect: wgpu::TextureAspect::All,
                 },
-                data_srgb_bytes,
+                bytes,
                 wgpu::TexelCopyBufferLayout {
                     offset: 0,
                     bytes_per_row: Some(4 * width),
@@ -675,7 +683,7 @@ impl Renderer {
                     mip_level_count: 1,
                     sample_count: 1,
                     dimension: wgpu::TextureDimension::D2,
-                    format: wgpu::TextureFormat::Rgba8Unorm,
+                    format: texture_format, // TODO: This is probably what needs to change for non sRGBA textures
                     usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
                     view_formats: &[wgpu::TextureFormat::Rgba8Unorm],
                 })
@@ -817,7 +825,7 @@ impl Renderer {
 
         let id = epaint::TextureId::User(self.next_user_texture_id);
         self.textures.insert(
-            id,
+            id.clone(),
             Texture {
                 texture: None,
                 bind_group,
