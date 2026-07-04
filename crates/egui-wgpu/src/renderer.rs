@@ -3,7 +3,6 @@
 use std::{borrow::Cow, num::NonZeroU64, ops::Range};
 
 use ahash::HashMap;
-use egui::Color32;
 use epaint::{PaintCallbackInfo, Primitive, Vertex, emath::NumExt as _, image::PixelType};
 
 use wgpu::util::DeviceExt as _;
